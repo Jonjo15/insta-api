@@ -5,7 +5,11 @@ const bcrypt = require("bcryptjs")
 require("dotenv").config()
 const issueJWT = require("../util/util").issueJWT
 const { body, validationResult } = require("express-validator");
+const passport = require("passport")
 
+router.get("/protected",  passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.status(200).json({success: true, user: req.user})
+})
 
 router.post("/login", async (req, res, next) => {
   try {
@@ -93,8 +97,8 @@ router.post("/register", [
 }]);
 
 
-router.post("/google", async(req, res, next) => {
-    res.status(200).json({success: true})
+router.post("/google", passport.authenticate('google-plus-token', {session: false}), async(req, res, next) => {
+    res.status(200).json({success: true, user: req.user})
 })
 
 module.exports = router;
