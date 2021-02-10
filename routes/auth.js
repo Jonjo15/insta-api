@@ -23,14 +23,14 @@ router.post("/login", async (req, res, next) => {
         success: true,
         token,
         user: {
-          _id: savedUser._id,
-          username: savedUser.username,
-          email: savedUser.email,
-          followers: savedUser.followers,
-          following: savedUser.following,
-          follow_requests: savedUser.follow_requests,
-          bio: savedUser.bio,
-          profile_pic_url: savedUser.profile_pic_url
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          followers: user.followers,
+          following: user.following,
+          follow_requests: user.follow_requests,
+          bio: user.bio,
+          profile_pic_url: user.profile_pic_url
         }
       });
     } catch (e) {
