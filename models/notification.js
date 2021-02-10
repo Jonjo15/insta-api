@@ -10,7 +10,7 @@ const NotificationSchema = new Schema(
     //   commentId: {type: Schema.Types.ObjectId, ref: "Comment"},
       type: {type: String, required: true},
       seen: {type: Boolean, default: false},
-      createdAt: { type: Date, default: new Date().toISOString() }
+      createdAt: { type: Date, default: Date.now }
     }   
   );
   

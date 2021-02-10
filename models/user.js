@@ -8,7 +8,7 @@ const UserSchema = new Schema(
       email: {type: String, required: true},
       password: {type: String},
       googleId: {type: String},
-      bio: {type: String, maxlength: 300},
+      bio: {type: String, maxlength: 300, default:"Hi"},
       profile_pic_url: {type: String},
       following: [{type: Schema.Types.ObjectId, ref: "User"}],
       followers: [{type: Schema.Types.ObjectId, ref: "User"}],

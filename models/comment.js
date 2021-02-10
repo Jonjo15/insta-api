@@ -7,8 +7,8 @@ const CommentSchema = new Schema(
       commenter: {type: Schema.Types.ObjectId, ref: 'User', required: true},
       post: {type: Schema.Types.ObjectId, ref: 'Post', required: true},
       body: {type: String, required: true},
-      likes: {type: [String], default: []},
-      createdAt: { type: Date, default: new Date().toISOString() }
+      likes:[{type:Schema.Types.ObjectId ,ref:"User"}],
+      createdAt: { type: Date, default: Date.now }
     }   
   );
   
