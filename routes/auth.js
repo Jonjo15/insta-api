@@ -98,7 +98,8 @@ router.post("/register", [
 
 
 router.post("/google", passport.authenticate('google-plus-token', {session: false}), async(req, res, next) => {
-    res.status(200).json({success: true, user: req.user})
+  //TODO: GIVE TOKEN
+  res.status(200).json({success: true, user: req.user})
 })
 
 module.exports = router;
