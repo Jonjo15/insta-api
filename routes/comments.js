@@ -9,8 +9,29 @@ const { body, validationResult } = require("express-validator");
 
 router.use(passport.authenticate('jwt', { session: false }))
 //delete comment
-router.delete("/:commentId", (req, res) => {
-    //TODO:
+router.delete("/:commentId", async (req, res) => {
+    try {
+        const comment = await Comment.findById(req.params.commentId)
+        if(!comment) throw Error("Comment not found")
+        const post = await Post.findById(comment.post)
+        if(!post) throw Error("This comment is on a deleted Post")
+    
+        if(!comment.commenter.equals(req.user._id)) {
+          return res.status(403).json({success: false, msg: "Can't delete someone else's comment"})
+        }
+        const response = await comment.delete()
+        let postToSave
+        if(response) {
+          //REMOVE COMMENT FROM THE POST
+          post.comments = post.comments.filter(id => String(id) !== String(comment._id))
+          postToSave = await post.save()
+          if(!postToSave) throw Error("Something went wrong")
+        }
+        res.status(200).json({success:true, response, postToSave,  msg: "Comment deleted successfully"})
+      }
+      catch(e) {
+        res.status(400).json({success: false, msg: e.message})
+      }
 })
 
 //LIKE/UNLIKE COMMENT
