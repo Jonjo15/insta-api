@@ -1,5 +1,8 @@
 var express = require('express');
 var router = express.Router();
+const Post = require("../models/post")
+const Comment = require("../models/comment")
+const Notification = require("../models/notification")
 
 //delete comment
 router.delete("/:commentId", (req, res) => {
