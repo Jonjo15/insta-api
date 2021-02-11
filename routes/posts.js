@@ -91,9 +91,52 @@ router.put("/:postId", async (req, res) => {
   }
 })
 
-router.post("/:postId", (req, res) => {
-  //TODO: FINISH this
-})
+router.post("/:postId",[
+  body('body', 'Comment must not be empty').trim().isLength({ min: 1 }).escape(),
+
+  async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render the form again with sanitized values/error messages.
+      res.status(401).json({success: false, msg: "input error"})
+      return;
+    }
+    const newComment = new Comment({
+      body: req.body.body,
+      commenter: req.user._id,
+      post: req.params.postId
+    })
+    try {
+      const post = await Post.findById(req.params.postId)
+      if(!post) throw Error("Post doesnt exist")
+
+      
+      const comment = await newComment.save()
+      if (!comment) throw Error('Something went wrong creating a new comment');
+      post.comments.push(comment._id)
+      //SAVE COMMENT IN POST MODEL ARRAY
+      const updatedPost = await post.save()
+      if(!updatedPost) throw Error("Something went wrong with saving a comment in Post")
+
+      let notify;
+      if(!req.user._id.equals(post.poster)) {
+          const newNotify = new Notification({
+          sender: req.user._id,
+          recipient: post.poster,
+          postId: post._id,
+          type: "comment"
+        })
+        notify = await newNotify.save()
+        if (!notify) throw Error("Something went wrong creating a notification")    
+      }
+      return res.status(200).json({success: true, comment,updatedPost, notify, msg: "comment created successfully"})
+    }
+    catch (e) {
+      res.status(400).json({success: false,  msg: e.message });
+    }
+  }
+])
 
 
 module.exports = router;

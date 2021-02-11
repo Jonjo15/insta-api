@@ -19,7 +19,7 @@ router.post("/:userId/reject", async(req, res) => {
 })
 
 //Unfollow a user
-router.pot("/:userId/unfollow", async(req, res) => {
+router.post("/:userId/unfollow", async(req, res) => {
   //TODO: 
 })
 module.exports = router;
