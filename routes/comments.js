@@ -4,8 +4,6 @@ const Post = require("../models/post")
 const Comment = require("../models/comment")
 const Notification = require("../models/notification")
 const passport = require("passport")
-const { body, validationResult } = require("express-validator");
-
 
 router.use(passport.authenticate('jwt', { session: false }))
 //delete comment
