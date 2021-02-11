@@ -42,7 +42,48 @@ router.post("/:userId", async(req, res) => {
 
 //ACCEPT FOLLOW REQUEST
 router.post("/:userId/accept", (req, res) => {
-  //TODO:
+  try {
+        const acceptedUser = await User.findById(req.params.userId)
+        if(!acceptedUser) throw Error("User doesnt exist")
+        //FIND IF THERE IS A FRIEND REQUEST IN THE USERS F.R. ARRAy
+        const index = req.user.follow_requests.findIndex((id) => String(id) === String(req.params.userId))
+        if (index === -1 ) throw Error("Friend request doesnt exist")
+
+        //CHECK IF ALREDY FRIENDS
+        const frIndx = req.user.followers.findIndex((id) => String(id) === String(req.params.userId)) 
+        if (frIndx !== -1) throw Error("Alredy followed by this user")
+        // friendRequests = friendRequests.filter()
+
+        //REMOVE FRIEND REQUEST
+        req.user.follow_requests = req.user.follow_requests.filter((id) => String(id) !== String(req.params.userId))
+
+        //add each other in friends arrays
+        req.user.followers.push(req.params.userId)
+        acceptedUser.following.push(req.user._id)
+
+        //save the documents
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, req.user, {new: true}).select("-password")
+        if(!updatedUser) throw Error("Something went wrong with saving the user")
+        const updAcceptedUser = await User.findByIdAndUpdate(req.params.userId, acceptedUser, {new: true}).select("-password")
+        if(!updAcceptedUser) throw Error("Something went wrong with saving friendship in accepted user friend list")
+
+        //CREATE AND SAVE NOTIFICATION
+        let notify;
+        if(!req.user._id.equals(req.params.userId)) {
+            const newNotify = new Notification({
+            sender: req.user._id,
+            recipient: req.params.userId,
+            type: "accept"
+          })
+          notify = await newNotify.save()
+          if(!notify) throw Error("Something went wrong with saving notification")
+        }
+
+        res.status(200).json({success: true, updatedUser, updAcceptedUser, notify})
+    }
+    catch(e) {
+        res.status(400).json({success:false, msg: e.message})
+    }
 })
 
 //REJECT FOLLOW REQUEST
