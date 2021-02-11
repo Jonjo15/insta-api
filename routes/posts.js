@@ -62,19 +62,19 @@ router.put("/:postId", async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId)
     if(!post) throw Error("Post not found")
-    const index = post.likes.findIndex((id) => id === String(req.user._id))
+    const index = post.likes.findIndex((id) => String(id) === String(req.user._id))
 
     if (index === -1) {
-      post.likes.push(String(req.user._id))
+      post.likes.push(req.user._id)
     }
     else {
-      post.likes = post.likes.filter((id) => id !== String(req.user._id))
+      post.likes = post.likes.filter((id) => String(id) !== String(req.user._id))
     }
 
     const updatedPost = await Post.findByIdAndUpdate(req.params.postId, post, {new: true} )
     if(!updatedPost) throw Error("Something went wrong")
     let notify;
-    if(!req.user._id.equals(post.poster) && index === -1) {
+    if(String(req.user._id) !== String(post.poster) && index === -1) {
         const newNotify = new Notification({
         sender: req.user._id,
         recipient: post.poster,
