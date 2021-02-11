@@ -29,18 +29,20 @@ router.put("/:commentId", async (req, res) => {
         }
         const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, comment, {new: true} )
         if(!updatedComment) throw Error("Something went wrong")
-    
-        if(String(req.user._id) !== String(comment.commenter)) {
+        
+        let notify;
+        if(String(req.user._id) !== String(comment.commenter) && index === -1) {
           const newNotify = new Notification({
           sender: req.user._id,
           recipient: comment.commenter,
           commentId: comment._id,
+          postId: comment.post,
           type: "like"
         })
         notify = await newNotify.save()
         if(!notify) throw Error("Something went wrong with saving notification")
       }
-        res.status(200).json({success: true, updatedComment})
+        res.status(200).json({success: true, updatedComment, notify: notify || "none"})
       }
       catch(e) {
         res.status(400).json({success:false, msg: e.message})
