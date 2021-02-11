@@ -41,7 +41,7 @@ router.post("/:userId", async(req, res) => {
 })
 
 //ACCEPT FOLLOW REQUEST
-router.post("/:userId/accept", (req, res) => {
+router.post("/:userId/accept", async(req, res) => {
   try {
         const acceptedUser = await User.findById(req.params.userId)
         if(!acceptedUser) throw Error("User doesnt exist")
