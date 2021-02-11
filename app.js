@@ -13,7 +13,7 @@ const authRouter = require("./routes/auth")
 require("dotenv").config()
 var app = express();
 
-mongoose.connect(process.env.MONGO_DB,  { useNewUrlParser: true , useUnifiedTopology: true})
+mongoose.connect(process.env.MONGO_DB,  { useNewUrlParser: true , useUnifiedTopology: true, useFindAndModify: true})
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 

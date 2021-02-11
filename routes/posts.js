@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const Post = require("../models/post")
 const Comment = require("../models/comment")
+const Notification = require("../models/notification")
 const passport = require("passport")
 const { body, validationResult } = require("express-validator");
 
@@ -57,6 +58,37 @@ router.delete("/:postId", async (req, res) => {
       }
 })
 
+router.put("/:postId", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId)
+    if(!post) throw Error("Post not found")
+    const index = post.likes.findIndex((id) => id === String(req.user._id))
 
+    if (index === -1) {
+      post.likes.push(String(req.user._id))
+    }
+    else {
+      post.likes = post.likes.filter((id) => id !== String(req.user._id))
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(req.params.postId, post, {new: true} )
+    if(!updatedPost) throw Error("Something went wrong")
+    let notify;
+    if(!req.user._id.equals(post.poster) && index === -1) {
+        const newNotify = new Notification({
+        sender: req.user._id,
+        recipient: post.poster,
+        postId: post._id,
+        type: "like"
+      })
+      notify = await newNotify.save()
+      if(!notify) throw Error("Something went wrong with saving notification")
+    }
+    res.status(200).json({success: true, updatedPost, notify})
+  }
+  catch(e) {
+    res.status(400).json({success:false, msg: e.message})
+  }
+})
 
 module.exports = router;
