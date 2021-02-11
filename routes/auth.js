@@ -98,8 +98,27 @@ router.post("/register", [
 
 
 router.post("/google", passport.authenticate('google-plus-token', {session: false}), async(req, res, next) => {
-  //TODO: GIVE TOKEN
-  res.status(200).json({success: true, user: req.user})
+try {
+    const {token} = issueJWT(req.user)
+    if(!token) throw Error("Couldnt sign the token")
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        _id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        followers: req.user.followers,
+        following: req.user.following,
+        follow_requests: req.user.follow_requests,
+        bio: req.user.bio,
+        profile_pic_url: req.user.profile_pic_url
+      }
+    });
+  }
+  catch(e) {
+    res.status(400).json({ msg: e.message });
+  }
 })
 
 module.exports = router;
