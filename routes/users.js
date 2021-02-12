@@ -88,11 +88,54 @@ router.post("/:userId/accept", async(req, res) => {
 
 //REJECT FOLLOW REQUEST
 router.post("/:userId/reject", async(req, res) => {
-  //TODO:
+
+    try {
+        const declinedUser = await User.findById(req.params.userId)
+        if(!declinedUser) throw Error("User doesnt exist")
+        //FIND IF THERE IS A FOLLOW REQUEST IN THE USERS F.R. ARRAy
+        const index = req.user.follow_requests.findIndex((id) => String(id) === String(req.params.userId))
+        if (index === -1 ) throw Error("Follow request doesnt exist")
+        //CHECK IF ALREDY Follower
+        const frIndx = req.user.followers.findIndex((id) => String(id) === String(req.params.userId)) 
+        if (frIndx !== -1) throw Error("Already followed by this user")
+        //REMOVE FRIEND REQUEST
+        req.user.follow_requests = req.user.follow_requests.filter((id) => String(id) !== String(req.params.userId))
+
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, req.user, {new: true})
+        if (!updatedUser) throw("Something went wrong with saving the user")
+        res.status(200).json({success: true, updatedUser})
+    }
+    catch(e) {
+        res.status(400).json({success:false, msg: e.message})
+    }
 })
 
 //Unfollow a user
 router.post("/:userId/unfollow", async(req, res) => {
   //TODO: 
+  try {
+      const unfollowedUser = await User.findById(req.params.userId)
+      if(!unfollowedUser) throw Error("User does not exist")
+
+      //check if user is being followed by current user
+      const index = req.user.following.findIndex((id) => String(id) === String(req.params.userId))
+      if (index === -1 ) throw Error("You cant unfollow user which you don't follow")
+      
+      //remove target user from curr.user following
+      req.user.following = req.user.following.filter((id) => String(id) !== String(req.params.userId))
+      //remove curr.user from target users followers
+      unfollowedUser.followers = unfollowedUser.followers.filter((id) => String(id) !== String(req.user._id))
+
+      //save the documents
+      const updatedCurrent = await User.findByIdAndUpdate(req.user._id, req.user, {new: true}).select("-password")
+      if(!updatedCurrent) throw Error("Something went wrong with saving the user")
+      const updUnfollowedUser = await User.findByIdAndUpdate(req.params.userId, unfollowedUser, {new: true}).select("-password")
+      if(!updUnfollowedUser) throw Error("Something went wrong with saving friendship in accepted user friend list")
+
+      res.status(200).json({success: true, updatedCurrent, updUnfollowedUser})
+  }
+  catch(e) {
+    res.status(400).json({success:false, msg: e.message})
+  }
 })
 module.exports = router;
