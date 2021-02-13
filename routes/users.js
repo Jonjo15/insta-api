@@ -7,6 +7,11 @@ const passport = require("passport")
 
 router.use(passport.authenticate('jwt', { session: false }))
 
+//GETTING USER INFO AT REFRESH
+router.get("/me", async(req, res, next) => {
+    res.json({success: true, user: req.user})
+  })
+
 //SEND A FOLLOW REQUEST
 router.post("/:userId", async(req, res) => {
   const following = req.user.following
