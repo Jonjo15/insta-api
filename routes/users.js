@@ -9,7 +9,11 @@ router.use(passport.authenticate('jwt', { session: false }))
 
 //GETTING USER INFO AT REFRESH
 router.get("/me", async(req, res, next) => {
-    res.json({success: true, user: req.user})
+    const user = await User.find({_id: req.user._id})
+                            .populate("following", "username _id  profile_pic_url")
+                            .populate("followers", "username _id email profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
+                            .populate("follow_requests", "username _id profile_pic_url")
+    res.json({success: true, user})
   })
 
 //SEND A FOLLOW REQUEST
