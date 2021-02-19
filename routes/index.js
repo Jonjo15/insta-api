@@ -43,5 +43,20 @@ router.get("/recommended", passport.authenticate("jwt", {session: false}), async
       res.status(400).json({success: false, msg: error.message})
     }
 })
+router.get("/explore/:skip", passport.authenticate("jwt", {session: false}), async (req, res, next) => {
+    let following = req.user.following
+    following.push(req.user._id)
 
+    try {
+        const users = await User.find({_id: {$nin: following}})
+                                .sort('_id')
+                                .select("_id username profile_pic_url")
+                                .skip(Number(req.params.skip))
+                                .limit(25)
+        
+        res.status(200).json({success: true, users})
+    } catch (error) {
+      res.status(400).json({success: false, msg: error.message})
+    }
+})
 module.exports = router;
