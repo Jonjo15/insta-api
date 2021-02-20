@@ -13,6 +13,7 @@ router.get("/me", async(req, res, next) => {
                             .populate("following", "username _id  profile_pic_url")
                             .populate("followers", "username _id email profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
                             .populate("follow_requests", "username _id profile_pic_url")
+                            .select("-password")
     res.json({success: true, user})
   })
 
