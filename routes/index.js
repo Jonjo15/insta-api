@@ -34,9 +34,10 @@ router.get("/recommended", passport.authenticate("jwt", {session: false}), async
     following.push(req.user._id)
 
     try {
+      // TODO: ADD FILTER TO FILTER OUT USERS WHO HAVE A FOLLOW REQUEST FROM CURRENT USER or not
         const recommendedUsers = await User.find({_id: {$nin: following}})
-                                            .select("_id username profile_pic_url")
-                                            .limit(10)
+                                            .select("_id username profile_pic_url follow_requests")
+                                            .limit(5)
         
         res.status(200).json({success: true, recommendedUsers})
     } catch (error) {
