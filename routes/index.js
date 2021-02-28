@@ -51,7 +51,7 @@ router.get("/explore/:skip", passport.authenticate("jwt", {session: false}), asy
     try {
         const users = await User.find({_id: {$nin: following}})
                                 .sort('_id')
-                                .select("_id username profile_pic_url")
+                                .select("_id username profile_pic_url follow_requests")
                                 .skip(Number(req.params.skip))
                                 .limit(25)
         
