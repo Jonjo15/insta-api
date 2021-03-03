@@ -14,7 +14,10 @@ router.get("/protected",  passport.authenticate('jwt', { session: false }), (req
 router.post("/login", async (req, res, next) => {
   try {
       // Check for existing user
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email })
+                             .populate("following", "username _id  profile_pic_url")
+                             .populate("followers", "username _id  profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
+                             .populate("follow_requests", "username _id profile_pic_url")
       if (!user) throw Error('User does not exist');
   
       const isMatch = await bcrypt.compare(req.body.password , user.password);
@@ -59,7 +62,10 @@ router.post("/register", [
       return;
     }
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email })
+                             .populate("following", "username _id  profile_pic_url")
+                             .populate("followers", "username _id  profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
+                             .populate("follow_requests", "username _id profile_pic_url");
       if (user) throw Error('User already exists');
   
   
@@ -101,19 +107,15 @@ router.post("/google", passport.authenticate('google-plus-token', {session: fals
 try {
     const {token} = issueJWT(req.user)
     if(!token) throw Error("Couldnt sign the token")
+    const user = await User.findOne({_id: req.user._id})
+                             .populate("following", "username _id  profile_pic_url")
+                             .populate("followers", "username _id  profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
+                             .populate("follow_requests", "username _id profile_pic_url")
+                             .select("-password");
     res.status(200).json({
       success: true,
       token,
-      user: {
-        _id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        followers: req.user.followers,
-        following: req.user.following,
-        follow_requests: req.user.follow_requests,
-        bio: req.user.bio,
-        profile_pic_url: req.user.profile_pic_url
-      }
+      user,
     });
   }
   catch(e) {
