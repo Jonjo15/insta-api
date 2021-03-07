@@ -49,6 +49,28 @@ router.post("/:userId", async(req, res) => {
         res.status(400).json({success:false, msg: e.message})
     }
 })
+//CANCEL FOLLOW REQUEST
+
+router.post("/:userId/cancel", async(req, res ) => {
+    try {
+        if(req.user.following.includes(req.params.userId)) throw Error("Can't cancel request if already accepted")
+
+        const canceledUser = await User.findById(req.params.userId)
+        if(!canceledUser) throw Error("User does NOT exist")
+
+        //FIND IF THERE IS A FRIEND REQUEST IN THE USERS F.R. ARRAy
+        const index = canceledUser.follow_requests.findIndex((id) => String(id) === String(req.user._id))
+        if (index === -1 ) throw Error("Friend request doesnt exist")
+
+        canceledUser.follow_requests = canceledUser.follow_requests.filter((id) => String(id) !== String(req.user._id))
+        console.log(canceledUser.follow_requests)
+        const updatedRecipient = await User.findByIdAndUpdate(req.params.userId, canceledUser, {new: true} ).select("-password")
+        
+        return res.status(200).json({success: true, updatedRecipient})
+    } catch(e) {
+        res.status(400).json({success:false, msg: e.message})
+    }
+})
 
 //ACCEPT FOLLOW REQUEST
 router.post("/:userId/accept", async(req, res) => {
