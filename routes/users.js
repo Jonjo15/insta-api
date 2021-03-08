@@ -2,19 +2,55 @@ var express = require('express');
 var router = express.Router();
 const User = require("../models/user")
 const Notification = require("../models/notification")
+const Post = require("../models/post")
 const passport = require("passport")
 
 
 router.use(passport.authenticate('jwt', { session: false }))
 
+
+router.get("/:userId/:skip", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId)
+                            .populate("following", "username _id profile_pic_url")
+                            .populate("followers", "username _id profile_pic_url")
+                            .select("-password")
+        if (!user) throw Error("User not found")
+
+        const posts = await Post.find({poster: req.params.userId})
+                                .populate("poster", "username profile_pic_url _id")
+                                .populate({ 
+                                path: 'comments',
+                                populate: [{
+                                path: 'commenter',
+                                select: 'username profile_pic_url _id'
+                                }]
+                                }).sort({"createdAt": -1})
+                                .skip(Number(req.params.skip))
+                                .limit(9)
+
+        if (!posts) throw Error("Something went wrong with getting posts")
+        const postCount = await Post.countDocuments({poster: req.params.userId})
+        res.status(200).json({success: true, user, posts, postCount})
+    } catch (error) {
+        res.status(400).json({success:false, msg: error.message})
+    }
+    
+})
 //GETTING USER INFO AT REFRESH
 router.get("/me", async(req, res, next) => {
-    const user = await User.find({_id: req.user._id})
+    try {
+        const user = await User.find({_id: req.user._id})
                             .populate("following", "username _id  profile_pic_url")
-                            .populate("followers", "username _id  profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
+                            .populate("followers", "username _id  profile_pic_url")
                             .populate("follow_requests", "username _id profile_pic_url")
                             .select("-password")
+        
     res.json({success: true, user})
+    } catch (error) {
+        res.status(400).json({success:false, msg: error.message})
+    }
+    
   })
 
 //SEND A FOLLOW REQUEST
