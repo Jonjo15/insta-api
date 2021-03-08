@@ -10,6 +10,7 @@ router.use(passport.authenticate('jwt', { session: false }))
 
 
 router.get("/:userId/:skip", async (req, res) => {
+    //TODO: ADD LOGIC TO PREVENT NON FOLLOWING USERS TO SEE POSTS
     try {
         const user = await User.findById(req.params.userId)
                             .populate("following", "username _id profile_pic_url")
