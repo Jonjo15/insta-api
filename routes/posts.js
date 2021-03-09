@@ -58,6 +58,30 @@ router.delete("/:postId", async (req, res) => {
       }
 })
 
+router.get("/:postId", async(req, res) => {
+  try {
+      const post = await Post.findById(req.params.postId)
+                              .populate("poster", "username profile_pic_url _id")
+                              .populate({ 
+                                path: 'comments',
+                                populate: [{
+                                path: 'commenter',
+                                select: 'username profile_pic_url _id'
+                                }]
+                              })
+      
+      if(!post) throw Error("Post not found")
+      // TODO: UNCOMMENT THIS AFTER TESTING OUT
+      // if(!req.user.following.includes(post.poster._id)) {
+      //   throw Error("Unauthorized")
+      // }
+
+      res.status(200).json({success: true, post})
+  } catch (e) {
+    res.status(400).json({success:false, msg: e.message})    
+  }
+})
+
 router.put("/:postId", async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId)

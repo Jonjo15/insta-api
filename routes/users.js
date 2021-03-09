@@ -4,21 +4,52 @@ const User = require("../models/user")
 const Notification = require("../models/notification")
 const Post = require("../models/post")
 const passport = require("passport")
+const { body, validationResult } = require("express-validator");
 
 
 router.use(passport.authenticate('jwt', { session: false }))
 
+router.put("/bio",
+    body('bio', 'Bio must not be empty').trim().isLength({ min: 1 }).escape(),
+    async(req, res) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            // There are errors. Render the form again with sanitized values/error messages.
+            res.status(400).json({success: false, errors, msg: "input error"})
+            return;
+          }
+          const user = await User.findByIdAndUpdate(req.user._id, {bio: req.body.bio}, {new: true}).select("-password")
+          if(!user) throw Error("Something went wrong with updating bio")
+          res.status(200).json({success: true, user})
+        try {
+            
+        } catch (e) {
+            res.status(400).json({success:false, msg: e.message})       
+        }
+})
+
+router.put("/profile_image", async(req, res) => {
+    try {
+        // TODO: FINISH
+    } catch (e) {
+        res.status(400).json({success:false, msg: e.message})              
+    }
+})
 
 router.get("/:userId/:skip", async (req, res) => {
-    //TODO: ADD LOGIC TO PREVENT NON FOLLOWING USERS TO SEE POSTS
     try {
         const user = await User.findById(req.params.userId)
                             .populate("following", "username _id profile_pic_url")
                             .populate("followers", "username _id profile_pic_url")
                             .select("-password")
         if (!user) throw Error("User not found")
-
-        const posts = await Post.find({poster: req.params.userId})
+        const postCount = await Post.countDocuments({poster: req.params.userId})
+        let posts = [];
+        if (!user.followers.includes(req.user._id)) {
+            return res.status(200).json({success: true, user, posts, postCount, msg: "Not following"})
+        }
+        posts = await Post.find({poster: req.params.userId})
                                 .populate("poster", "username profile_pic_url _id")
                                 .populate({ 
                                 path: 'comments',
@@ -31,7 +62,6 @@ router.get("/:userId/:skip", async (req, res) => {
                                 .limit(9)
 
         if (!posts) throw Error("Something went wrong with getting posts")
-        const postCount = await Post.countDocuments({poster: req.params.userId})
         res.status(200).json({success: true, user, posts, postCount})
     } catch (error) {
         res.status(400).json({success:false, msg: error.message})
