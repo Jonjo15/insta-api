@@ -30,12 +30,13 @@ router.get('/', passport.authenticate("jwt", {session: false}), async (req, res,
 //GET 10 UNFOLLOWED USERS
 router.get("/recommended", passport.authenticate("jwt", {session: false}), async (req, res, next) =>{
 
-    let following = req.user.following
-    following.push(req.user._id)
+    let currentFollowing = req.user.following
+    currentFollowing.push(req.user._id)
 
     try {
-      // TODO: ADD FILTER TO FILTER OUT USERS WHO HAVE A FOLLOW REQUEST FROM CURRENT USER or not
-        const recommendedUsers = await User.find({_id: {$nin: following}})
+      // TODO: ADD FILTER TO FILTER OUT USERS WHO HAVE A FOLLOW REQUEST FROM CURRENT USER
+      // TODO: TEST THIS OUT
+        const recommendedUsers = await User.find({_id: {$nin: currentFollowing}, follow_requests: { $not: { $all: [req.user._id] } }})
                                             .select("_id username profile_pic_url follow_requests")
                                             .limit(5)
         

@@ -8,7 +8,7 @@ router.use(passport.authenticate('jwt', { session: false }))
 //GET 10 MOST RECENT NOTIFICATIONS FOR CURRENT USER
 router.get("/", async(req, res) => {
     try {
-        const notifications = await Notification.find({recipient: req.user._id})
+        const notifications = await Notification.find({recipient: req.user._id, seen: false})
                                                 .populate("sender", "username _id")
                                                 .sort({"createdAt": -1})
                                                 .limit(10)
