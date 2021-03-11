@@ -5,6 +5,7 @@ const Notification = require("../models/notification")
 const Post = require("../models/post")
 const passport = require("passport")
 const { body, validationResult } = require("express-validator");
+const { cloudinary } = require('../config/cloudinary');
 
 
 router.use(passport.authenticate('jwt', { session: false }))
@@ -31,7 +32,14 @@ router.put("/bio",
 
 router.put("/profile_image", async(req, res) => {
     try {
-        // TODO: FINISH
+        const fileStr = req.body.data;
+        const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+            upload_preset: "moxqjptj",
+        });
+        console.log(uploadResponse);
+        const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: uploadResponse.secure_url}, {new: true}).select("-password")
+        if(!response) throw Error("Something went wrong with uploading profile picture")
+        res.status(200).json({success: true, user: response})
     } catch (e) {
         res.status(400).json({success:false, msg: e.message})              
     }
