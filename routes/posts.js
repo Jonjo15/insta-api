@@ -6,7 +6,7 @@ const Comment = require("../models/comment")
 const Notification = require("../models/notification")
 const passport = require("passport")
 const { body, validationResult } = require("express-validator");
-const cloudinary = require("cloudinary").v2
+var cloudinary = require("cloudinary").v2
 // const {cloudinary} = require("../config/cloudinary")
 
 router.use(passport.authenticate('jwt', { session: false }))
@@ -31,24 +31,58 @@ router.post("/", [
         
         // try {
           // const response = await cloudinary.uploader.upload(req.body.picture)
-          let url;
-          cloudinary.uploader.upload(req.body.picture, { upload_preset: process.env.UPLOAD_PRESET })
-          .then(function (image) {
-            console.log(image)
-            url = image.secure_url
+          // let url;
+          cloudinary.uploader.upload(
+            req.body.picture,
+            {upload_preset: process.env.UPLOAD_PRESET},
+            // { public_id: `blog/${uniqueFilename}`, tags: `blog` }, // directory and tags are optional
+            function(err, image) {
+              if (err) return res.send(err)
+              console.log('file uploaded to Cloudinary')
+      
+              // var fs = require('fs')
+              // fs.unlinkSync(path)
+              console.log(image)
+              res.json({post: {picture: image.secure_url, poster: req.user, body}})
+            }
+          )
+          // cloudinary.uploader.upload(req.body.picture, { upload_preset: process.env.UPLOAD_PRESET },
+          //   async function(err, image) {
+          //     if (err) return res.status(400).json(err)
+          //     console.log('file uploaded to Cloudinary')
+          //     // remove file from server
+          //     console.log(img)
+          //     try {
+          //       const newPost = new Post({
+          //           body: req.body.body,
+          //           picture: img.secure_url,
+          //           poster: req.user._id
+          //         })
 
-            return new Post({
-              body: req.body.body,
-              picture: url,
-              poster: req.user._id
-            }).save()
-          }).then(result => {
-            return res.status(200).json({success: true, post: result, msg:"post created successfully"})
-          })
-          .catch(function (err) {
-            console.log(err)
-            res.status(400).json({success: false,  message: "Something went wrtong" });
-          });
+          //         const post = await newPost.save()
+          //         if(!post) throw Error("Something went wrong with saving post")
+          //         return res.status(200).json({success: true, post})
+          //     } catch (error) {
+          //       return res.status(400).json({success: false,  message: "Something went wrtong" });
+          //     }
+              
+          //   })
+          // .then(function (image) {
+          //   console.log(image)
+          //   url = image.secure_url
+
+          //   return new Post({
+          //     body: req.body.body,
+          //     picture: url,
+          //     poster: req.user._id
+          //   }).save()
+          // }).then(result => {
+          //   return res.status(200).json({success: true, post: result, msg:"post created successfully"})
+          // })
+          // .catch(function (err) {
+          //   console.log(err)
+          //   res.status(400).json({success: false,  message: "Something went wrtong" });
+          // });
           // if(!response) throw Error("Something went wrong with cloudinary")
           // console.log(response)
         //  ' const newPost = new Post({
