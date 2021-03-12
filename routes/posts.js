@@ -21,14 +21,24 @@ router.post("/", [
           res.status(400).json({success: false, msg: "input error"})
           return;
         }
-        const response = await cloudinary.uploader.upload(req.body.picture, {upload_preset: process.env.UPLOAD_PRESET})
-        console.log(response)
-        const newPost = new Post({
-          body: req.body.body,
-          picture: response.secure_url,
-          poster: req.user._id
-        })
+        
         try {
+          console.log(req.body)
+          let url;
+          // const response = await cloudinary.uploader.upload(req.body.picture, { upload_preset })
+          cloudinary.uploader.upload("sample.jpg", 
+            function(error, result) {
+              console.log(result, error); 
+              // if(result) {
+              //   // url = result.secure_url;
+              // }
+            });
+          // console.log(response)
+          const newPost = new Post({
+            body: req.body.body,
+            picture: response.secure_url,
+            poster: req.user._id
+          })
           const post = await newPost.save()
           if (!post) throw Error('Something went wrong creating a new post');
   
