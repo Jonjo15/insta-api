@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();
+require("dotenv").config()
 const Post = require("../models/post")
 const Comment = require("../models/comment")
 const Notification = require("../models/notification")
 const passport = require("passport")
 const { body, validationResult } = require("express-validator");
-
+const {cloudinary} = require("../config/cloudinary")
 
 router.use(passport.authenticate('jwt', { session: false }))
 
@@ -20,10 +21,11 @@ router.post("/", [
           res.status(400).json({success: false, msg: "input error"})
           return;
         }
-  
+        const response = await cloudinary.uploader.upload(req.body.picture, {upload_preset: process.env.UPLOAD_PRESET})
+        console.log(response)
         const newPost = new Post({
           body: req.body.body,
-          picture: req.body.picture,
+          picture: response.secure_url,
           poster: req.user._id
         })
         try {
