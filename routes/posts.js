@@ -6,28 +6,23 @@ const Comment = require("../models/comment")
 const Notification = require("../models/notification")
 const passport = require("passport")
 const { body, validationResult } = require("express-validator");
-var cloudinary = require("cloudinary").v2
-// const {cloudinary} = require("../config/cloudinary")
-const axios = require("axios")
-var FormData = require('form-data');
+const {cloudinary} = require("../config/cloudinary")
+
 
 router.use(passport.authenticate('jwt', { session: false }))
 
-cloudinary.config({
-  cloud_name: "jonjo15" || process.env.CLOUDINARY_NAME,
-  api_key: "627776891652887" || process.env.CLOUDINARY_API_KEY,
-  api_secret: "3gBwvkwXLtPAPssbug-Ow-hM7lE" || process.env.CLOUDINARY_API_SECRET,
-});
+
 
 router.post("/", 
-    // body("picture", "Post must have a picture").trim().isLength({min: 5}).escape(),
     async (req, res, next) => {
       
               try {
                 const fileStr = req.body.picture;
-                const uploadResponse = await cloudinary.uploader.upload(fileStr, {
-                    upload_preset: process.env.UPLOAD_PRESET,
-                });
+                const uploadResponse = await cloudinary.uploader.upload(fileStr
+                //   , {
+                //     upload_preset: process.env.UPLOAD_PRESET,
+                // }
+                );
                 const newPost = new Post({
                   picture: uploadResponse.secure_url,
                   body: req.body.body,
@@ -63,6 +58,8 @@ router.delete("/:postId", async (req, res) => {
 
 router.get("/:postId", async(req, res) => {
   try {
+      let following = req.user.following
+      following.push(req.user._id)
       const post = await Post.findById(req.params.postId)
                               .populate("poster", "username profile_pic_url _id")
                               .populate({ 
@@ -75,9 +72,9 @@ router.get("/:postId", async(req, res) => {
       
       if(!post) throw Error("Post not found")
       // TODO: UNCOMMENT THIS AFTER TESTING OUT
-      // if(!req.user.following.includes(post.poster._id)) {
-      //   throw Error("Unauthorized")
-      // }
+      if(!following.includes(post.poster._id)) {
+        throw Error("Unauthorized")
+      }
 
       res.status(200).json({success: true, post})
   } catch (e) {
