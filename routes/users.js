@@ -32,11 +32,11 @@ router.put("/bio",
 
 router.put("/profile_image", async(req, res) => {
     try {
-        // const fileStr = req.body.picture;
-        // const uploadResponse = await cloudinary.uploader.upload(fileStr, {
-        //             upload_preset: process.env.UPLOAD_PRESET,
-        // });
-        const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: req.body.profile_pic_url}, {new: true}).select("-password")
+        const fileStr = req.body.profile_pic_url;
+        const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+                    upload_preset: process.env.UPLOAD_PRESET,
+        });
+        const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: uploadResponse.secure_url}, {new: true}).select("-password")
         if(!response) throw Error("Something went wrong with uploading profile picture")
         res.status(200).json({success: true, user: response})
     } catch (e) {
