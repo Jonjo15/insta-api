@@ -8,97 +8,38 @@ const passport = require("passport")
 const { body, validationResult } = require("express-validator");
 var cloudinary = require("cloudinary").v2
 // const {cloudinary} = require("../config/cloudinary")
+const axios = require("axios")
+var FormData = require('form-data');
 
 router.use(passport.authenticate('jwt', { session: false }))
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: "jonjo15" || process.env.CLOUDINARY_NAME,
+  api_key: "627776891652887" || process.env.CLOUDINARY_API_KEY,
+  api_secret: "3gBwvkwXLtPAPssbug-Ow-hM7lE" || process.env.CLOUDINARY_API_SECRET,
 });
 
-router.post("/", [
-    body("picture", "Post must have a picture").trim().isLength({min: 5}).escape(),
+router.post("/", 
+    // body("picture", "Post must have a picture").trim().isLength({min: 5}).escape(),
     async (req, res, next) => {
-        // console.log(process.env.CLOUDINARY_API_KEY, process.env.CLOUDINARY_NAME, process.env.CLOUDINARY_API_SECRET)
-        // console.log(cloudinary)
-        const errors = validationResult(req);
-        console.log(req.body)
-        if (!errors.isEmpty()) {
-          res.status(400).json({success: false, msg: "input error"})
-          return;
-        }
-        
-        // try {
-          // const response = await cloudinary.uploader.upload(req.body.picture)
-          // let url;
-          cloudinary.uploader.upload(
-            req.body.picture,
-            {upload_preset: process.env.UPLOAD_PRESET},
-            // { public_id: `blog/${uniqueFilename}`, tags: `blog` }, // directory and tags are optional
-            function(err, image) {
-              if (err) return res.send(err)
-              console.log('file uploaded to Cloudinary')
       
-              // var fs = require('fs')
-              // fs.unlinkSync(path)
-              console.log(image)
-              res.json({post: {picture: image.secure_url, poster: req.user, body}})
-            }
-          )
-          // cloudinary.uploader.upload(req.body.picture, { upload_preset: process.env.UPLOAD_PRESET },
-          //   async function(err, image) {
-          //     if (err) return res.status(400).json(err)
-          //     console.log('file uploaded to Cloudinary')
-          //     // remove file from server
-          //     console.log(img)
-          //     try {
-          //       const newPost = new Post({
-          //           body: req.body.body,
-          //           picture: img.secure_url,
-          //           poster: req.user._id
-          //         })
-
-          //         const post = await newPost.save()
-          //         if(!post) throw Error("Something went wrong with saving post")
-          //         return res.status(200).json({success: true, post})
-          //     } catch (error) {
-          //       return res.status(400).json({success: false,  message: "Something went wrtong" });
-          //     }
-              
-          //   })
-          // .then(function (image) {
-          //   console.log(image)
-          //   url = image.secure_url
-
-          //   return new Post({
-          //     body: req.body.body,
-          //     picture: url,
-          //     poster: req.user._id
-          //   }).save()
-          // }).then(result => {
-          //   return res.status(200).json({success: true, post: result, msg:"post created successfully"})
-          // })
-          // .catch(function (err) {
-          //   console.log(err)
-          //   res.status(400).json({success: false,  message: "Something went wrtong" });
-          // });
-          // if(!response) throw Error("Something went wrong with cloudinary")
-          // console.log(response)
-        //  ' const newPost = new Post({
-        //     body: req.body.body,
-        //     picture: response.secure_url,'
-        //     poster: req.user._id
-        //   })
-        //   const post = await newPost.save()
-        //   if (!post) throw Error('Something went wrong creating a new post');'
-  
-        }
-        // catch (e) {
-        //   res.status(400).json({success: false,  msg: e.message });
-        // }
-    // }
-  ])
+              try {
+                const fileStr = req.body.picture;
+                const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+                    upload_preset: process.env.UPLOAD_PRESET,
+                });
+                const newPost = new Post({
+                  picture: uploadResponse.secure_url,
+                  body: req.body.body,
+                  poster: req.user._id
+                })
+                const post = await newPost.save()
+                res.json({ msg: 'yaya', post });
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).json({ err: 'Something went wrong' });
+                }
+              });
 
 router.delete("/:postId", async (req, res) => {
     try {
