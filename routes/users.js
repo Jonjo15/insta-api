@@ -61,7 +61,7 @@ router.get("/:userId/:skip", async (req, res) => {
         const postCount = await Post.countDocuments({poster: req.params.userId})
         let posts = [];
         let index = followers.findIndex(f => String(f._id) === String(req.user._id))
-        // TODO: FIX BUG BELOW
+        // TODO: FIX BUG BELOW---fixed
         if (index === -1 && String(req.user._id) !== String(req.params.userId)) {
             return res.status(200).json({success: true, user, posts,bool: String(req.user._id) !== String(req.params.userId), postCount, msg: "Not following"})
         }
