@@ -12,12 +12,12 @@ router.get('/', passport.authenticate("jwt", {session: false}), async (req, res,
 
     try {
         const timeline = await Post.find({ poster: {$in: following}})
-                                    .populate("poster", "username profile_pic_url _id")
+                                    .populate("poster", "username profile_pic_url _id profile_public_id")
                                     .populate({ 
                                       path: 'comments',
                                       populate: [{
                                        path: 'commenter',
-                                       select: 'username profile_pic_url _id'
+                                       select: 'username profile_pic_url _id profile_public_id'
                                       }]
                                     }).sort({"createdAt": -1}).limit(25)
 
@@ -37,7 +37,7 @@ router.get("/recommended", passport.authenticate("jwt", {session: false}), async
       // TODO: ADD FILTER TO FILTER OUT USERS WHO HAVE A FOLLOW REQUEST FROM CURRENT USER
       // TODO: TEST THIS OUT
         const recommendedUsers = await User.find({_id: {$nin: currentFollowing}, follow_requests: { $not: { $all: [req.user._id] } }})
-                                            .select("_id username profile_pic_url follow_requests")
+                                            .select("_id username profile_pic_url follow_requests profile_public_id")
                                             .limit(5)
         
         res.status(200).json({success: true, recommendedUsers})
@@ -52,7 +52,7 @@ router.get("/explore/:skip", passport.authenticate("jwt", {session: false}), asy
     try {
         const users = await User.find({_id: {$nin: following}})
                                 .sort('_id')
-                                .select("_id username profile_pic_url follow_requests")
+                                .select("_id username profile_pic_url follow_requests profile_public_id")
                                 .skip(Number(req.params.skip))
                                 .limit(25)
         

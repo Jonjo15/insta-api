@@ -47,8 +47,8 @@ router.put("/profile_image", async(req, res) => {
 router.get("/:userId/:skip", async (req, res) => {
     try {
         const user = await User.findById(req.params.userId)
-                            .populate("following", "username _id profile_pic_url")
-                            .populate("followers", "username _id profile_pic_url")
+                            .populate("following", "username _id profile_pic_url profile_public_id")
+                            .populate("followers", "username _id profile_pic_url profile_public_id")
                             .select("-password")
         if (!user) throw Error("User not found")
         const postCount = await Post.countDocuments({poster: req.params.userId})
@@ -57,12 +57,12 @@ router.get("/:userId/:skip", async (req, res) => {
             return res.status(200).json({success: true, user, posts, postCount, msg: "Not following"})
         }
         posts = await Post.find({poster: req.params.userId})
-                                .populate("poster", "username profile_pic_url _id")
+                                .populate("poster", "username profile_pic_url _id profile_public_id")
                                 .populate({ 
                                 path: 'comments',
                                 populate: [{
                                 path: 'commenter',
-                                select: 'username profile_pic_url _id'
+                                select: 'username profile_pic_url _id profile_public_id'
                                 }]
                                 }).sort({"createdAt": -1})
                                 .skip(Number(req.params.skip))
@@ -79,9 +79,9 @@ router.get("/:userId/:skip", async (req, res) => {
 router.get("/me", async(req, res, next) => {
     try {
         const user = await User.find({_id: req.user._id})
-                            .populate("following", "username _id  profile_pic_url")
-                            .populate("followers", "username _id  profile_pic_url")
-                            .populate("follow_requests", "username _id profile_pic_url")
+                            .populate("following", "username _id  profile_pic_url profile_public_id")
+                            .populate("followers", "username _id  profile_pic_url profile_public_id")
+                            .populate("follow_requests", "username _id profile_pic_url profile_public_id")
                             .select("-password")
         
     res.json({success: true, user})
