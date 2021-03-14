@@ -10,6 +10,7 @@ const UserSchema = new Schema(
       googleId: {type: String},
       bio: {type: String, maxlength: 300, default:"Hi"},
       profile_pic_url: {type: String, default: "https://res.cloudinary.com/jonjo15/image/upload/v1612707833/jqdeohhezcby05lismmr.png"},
+      profile_public_id: {type: String, default: "jqdeohhezcby05lismmr"},
       following: [{type: Schema.Types.ObjectId, ref: "User"}],
       followers: [{type: Schema.Types.ObjectId, ref: "User"}],
       follow_requests: [{type: Schema.Types.ObjectId, ref: "User"}]

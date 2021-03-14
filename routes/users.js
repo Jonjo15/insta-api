@@ -36,7 +36,7 @@ router.put("/profile_image", async(req, res) => {
         const uploadResponse = await cloudinary.uploader.upload(fileStr, {
                     upload_preset: process.env.UPLOAD_PRESET,
         });
-        const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: uploadResponse.secure_url}, {new: true}).select("-password")
+        const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: uploadResponse.secure_url, profile_public_id: uploadResponse.public_id}, {new: true}).select("-password")
         if(!response) throw Error("Something went wrong with uploading profile picture")
         res.status(200).json({success: true, user: response})
     } catch (e) {
