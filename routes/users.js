@@ -45,16 +45,25 @@ router.put("/profile_image", async(req, res) => {
 })
 
 router.get("/:userId/:skip", async (req, res) => {
+    // let followers = req.user.followers
+    // followers.push(req.user._id)
     try {
         const user = await User.findById(req.params.userId)
                             .populate("following", "username _id profile_pic_url profile_public_id")
                             .populate("followers", "username _id profile_pic_url profile_public_id")
                             .select("-password")
         if (!user) throw Error("User not found")
+
+        let followers = user.followers;
+        // if (user._id === req.user._id) {
+        //     followers.push(req.user._id)
+        // }
         const postCount = await Post.countDocuments({poster: req.params.userId})
         let posts = [];
-        if (!user.followers.includes(req.user._id)) {
-            return res.status(200).json({success: true, user, posts, postCount, msg: "Not following"})
+        let index = followers.findIndex(f => String(f._id) === String(req.user._id))
+        // TODO: FIX BUG BELOW
+        if (index === -1 && String(req.user._id) !== String(req.params.userId)) {
+            return res.status(200).json({success: true, user, posts,bool: String(req.user._id) !== String(req.params.userId), postCount, msg: "Not following"})
         }
         posts = await Post.find({poster: req.params.userId})
                                 .populate("poster", "username profile_pic_url _id profile_public_id")
