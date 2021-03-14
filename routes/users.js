@@ -38,7 +38,7 @@ router.put("/profile_image", async(req, res) => {
         });
         const response = await User.findByIdAndUpdate(req.user._id, {profile_pic_url: uploadResponse.secure_url, profile_public_id: uploadResponse.public_id}, {new: true}).select("-password")
         if(!response) throw Error("Something went wrong with uploading profile picture")
-        res.status(200).json({success: true, user: response})
+        res.status(200).json({success: true, response})
     } catch (e) {
         res.status(400).json({success:false, msg: e.message})              
     }
