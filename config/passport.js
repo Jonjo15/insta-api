@@ -41,7 +41,7 @@ module.exports = (passport) => {
                     googleId: profile.id,
                     email: profile.emails[0].value,
                     profile_pic_url: profile.photos[0].value,
-                    username:profile.displayName
+                    username: profile.displayName
                 })
                 try {
                     const savedUser = await newUser.save()

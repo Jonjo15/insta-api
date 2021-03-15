@@ -41,7 +41,7 @@ router.post("/login", async (req, res, next) => {
         }
       });
     } catch (e) {
-      res.status(400).json({ msg: e.message });
+      res.status(400).json({ msg: e.message, hello: "world" });
     }
 });
 
@@ -104,14 +104,13 @@ router.post("/register", [
 
 
 router.post("/google", passport.authenticate('google-plus-token', {session: false}), async(req, res, next) => {
-try {
+  try {
     const {token} = issueJWT(req.user)
     if(!token) throw Error("Couldnt sign the token")
     const user = await User.findOne({_id: req.user._id})
-                             .populate("following", "username _id  profile_pic_url")
-                             .populate("followers", "username _id  profile_pic_url")//TODO: REMOVE EMAIL FROM HERE
-                             .populate("follow_requests", "username _id profile_pic_url")
-                             .select("-password");
+                             .populate("following", "username _id  profile_pic_url profile_public_id")
+                             .populate("followers", "username _id  profile_pic_url profile_public_id")//TODO: REMOVE EMAIL FROM HERE
+                             .populate("follow_requests", "username _id profile_pic_url profile_public_id")
     res.status(200).json({
       success: true,
       token,
@@ -119,7 +118,7 @@ try {
     });
   }
   catch(e) {
-    res.status(400).json({ msg: e.message });
+    res.status(400).json({ msg: e.message, hello:"world" });
   }
 })
 
