@@ -56,13 +56,11 @@ router.get("/:userId/:skip", async (req, res) => {
         if (!user) throw Error("User not found")
 
         let followers = user.followers;
-        // if (user._id === req.user._id) {
-        //     followers.push(req.user._id)
-        // }
+        
         const postCount = await Post.countDocuments({poster: req.params.userId})
         let posts = [];
+        // CHECKING IF FOLLOWING THIS USER, TO SEE IF NEED TO FETCH HIS POSTS
         let index = followers.findIndex(f => String(f._id) === String(req.user._id))
-        // TODO: FIX BUG BELOW---fixed
         if (index === -1 && String(req.user._id) !== String(req.params.userId)) {
             return res.status(200).json({success: true, user, posts,bool: String(req.user._id) !== String(req.params.userId), postCount, msg: "Not following"})
         }
