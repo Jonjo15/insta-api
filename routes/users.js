@@ -49,6 +49,7 @@ router.get("/:userId/:skip", async (req, res) => {
     // followers.push(req.user._id)
     try {
         const user = await User.findById(req.params.userId)
+                            .populate("follow_requests", "username _id profile_pic_url profile_public_id")
                             .populate("following", "username _id profile_pic_url profile_public_id")
                             .populate("followers", "username _id profile_pic_url profile_public_id")
                             .select("-password")
