@@ -1,8 +1,7 @@
 const JwtStrategy = require('passport-jwt').Strategy,
      ExtractJwt = require('passport-jwt').ExtractJwt;
 const User = require("../models/user")
-var GooglePlusTokenStrategy = require('passport-google-plus-token');
-
+var GoogleTokenStrategy = require("passport-google-token").Strategy
 require("dotenv").config()
 
 var opts = {}
@@ -23,7 +22,7 @@ module.exports = (passport) => {
             }
         }).select("-password");
     }));
-    passport.use(new GooglePlusTokenStrategy({
+    passport.use(new GoogleTokenStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,  
       },

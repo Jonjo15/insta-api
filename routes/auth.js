@@ -103,7 +103,7 @@ router.post("/register", [
 }]);
 
 
-router.post("/google", passport.authenticate('google-plus-token', {session: false}), async(req, res, next) => {
+router.post("/google", passport.authenticate('google-token', {session: false}), async(req, res, next) => {
   try {
     const {token} = issueJWT(req.user)
     if(!token) throw Error("Couldnt sign the token")
