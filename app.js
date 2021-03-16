@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var compression = require('compression');
+var helmet = require('helmet');
 const mongoose = require("mongoose")
 const passport = require("passport")
 const cors = require("cors")
@@ -21,7 +23,8 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 require('./config/passport')(passport);
 app.use(passport.initialize())
-
+app.use(compression()); //Compress all routes
+app.use(helmet());
 app.use(logger('dev'));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
