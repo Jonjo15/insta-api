@@ -21,6 +21,8 @@ mongoose.connect(process.env.MONGO_DB, { useNewUrlParser: true, useCreateIndex: 
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+app.use(cors({origin: "https://gifted-khorana-ff4d1e.netlify.app"}))
+
 require('./config/passport')(passport);
 app.use(passport.initialize())
 app.use(compression()); //Compress all routes
@@ -30,7 +32,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors({origin: "https://gifted-khorana-ff4d1e.netlify.app/"}))
 
 
 app.use('/', indexRouter);
